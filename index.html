@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>军棋对战判定器</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#ffffff" />
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      max-width: 500px;
+      margin: auto;
+    }
+    .hidden { display: none; }
+    button { margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <h2>军棋对战判定器</h2>
+
+  <div id="step1">
+    <label>玩家 A 输入卡牌：</label>
+    <input type="text" id="cardA" placeholder="如：师、雷、炸等" />
+    <button onclick="nextStep()">确认</button>
+  </div>
+
+  <div id="step2" class="hidden">
+    <label>玩家 B 输入卡牌：</label>
+    <input type="text" id="cardB" placeholder="如：团、兵、炸等" />
+    <button onclick="compareCards()">确认并比较</button>
+  </div>
+
+  <div id="result" class="hidden"></div>
+  <button id="restartBtn" class="hidden" onclick="restart()">再来一局</button>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('Service Worker 注册成功'))
+          .catch(err => console.log('Service Worker 注册失败', err));
+      });
+    }
+
+    const ranks = ['兵', '排', '连', '营', '团', '旅', '师', '军', '司'];
+    let cardA = "";
+
+    function nextStep() {
+      cardA = document.getElementById("cardA").value.trim();
+      if (!cardA) return alert("请输入玩家A的卡牌");
+      document.getElementById("step1").classList.add("hidden");
+      document.getElementById("step2").classList.remove("hidden");
+    }
+
+    function compareCards() {
+      const cardB = document.getElementById("cardB").value.trim();
+      if (!cardB) return alert("请输入玩家B的卡牌");
+
+      let result = "";
+      if (cardA === '炸' || cardB === '炸') {
+        result = "同归于尽（炸弹）";
+      } else if (cardA === '雷' || cardB === '雷') {
+        if (cardA === '雷' && cardB === '兵') result = "玩家B赢（兵可破雷）";
+        else if (cardB === '雷' && cardA === '兵') result = "玩家A赢（兵可破雷）";
+        else result = "同归于尽（雷）";
+      } else {
+        const rankA = ranks.indexOf(cardA);
+        const rankB = ranks.indexOf(cardB);
+        if (rankA === -1 || rankB === -1) {
+          result = "无效输入，请检查卡牌名称";
+        } else if (rankA > rankB) {
+          result = "玩家B赢";
+        } else if (rankA < rankB) {
+          result = "玩家A赢";
+        } else {
+          result = "平局";
+        }
+      }
+      document.getElementById("result").textContent = result;
+      document.getElementById("result").classList.remove("hidden");
+      document.getElementById("restartBtn").classList.remove("hidden");
+      document.getElementById("step2").classList.add("hidden");
+    }
+
+    function restart() {
+      cardA = "";
+      document.getElementById("cardA").value = "";
+      document.getElementById("cardB").value = "";
+      document.getElementById("step1").classList.remove("hidden");
+      document.getElementById("step2").classList.add("hidden");
+      document.getElementById("result").classList.add("hidden");
+      document.getElementById("restartBtn").classList.add("hidden");
+    }
+  </script>
+</body>
+</html>
+
+add index
